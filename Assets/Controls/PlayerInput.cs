@@ -46,6 +46,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Aim"",
+                    ""type"": ""Button"",
+                    ""id"": ""c3426edc-9291-4917-96b8-62cb92127ac0"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Attack"",
                     ""type"": ""Button"",
                     ""id"": ""3e5af40f-8732-4b9f-b4e3-bab76a90d83f"",
@@ -132,6 +141,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""21390d8b-bce9-4b10-9346-260baf4ed744"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Aim"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -159,6 +179,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_GameplayMain = asset.FindActionMap("GameplayMain", throwIfNotFound: true);
         m_GameplayMain_Movement = m_GameplayMain.FindAction("Movement", throwIfNotFound: true);
         m_GameplayMain_Look = m_GameplayMain.FindAction("Look", throwIfNotFound: true);
+        m_GameplayMain_Aim = m_GameplayMain.FindAction("Aim", throwIfNotFound: true);
         m_GameplayMain_Attack = m_GameplayMain.FindAction("Attack", throwIfNotFound: true);
     }
 
@@ -223,6 +244,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private List<IGameplayMainActions> m_GameplayMainActionsCallbackInterfaces = new List<IGameplayMainActions>();
     private readonly InputAction m_GameplayMain_Movement;
     private readonly InputAction m_GameplayMain_Look;
+    private readonly InputAction m_GameplayMain_Aim;
     private readonly InputAction m_GameplayMain_Attack;
     public struct GameplayMainActions
     {
@@ -230,6 +252,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public GameplayMainActions(@PlayerInput wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_GameplayMain_Movement;
         public InputAction @Look => m_Wrapper.m_GameplayMain_Look;
+        public InputAction @Aim => m_Wrapper.m_GameplayMain_Aim;
         public InputAction @Attack => m_Wrapper.m_GameplayMain_Attack;
         public InputActionMap Get() { return m_Wrapper.m_GameplayMain; }
         public void Enable() { Get().Enable(); }
@@ -246,6 +269,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
+            @Aim.started += instance.OnAim;
+            @Aim.performed += instance.OnAim;
+            @Aim.canceled += instance.OnAim;
             @Attack.started += instance.OnAttack;
             @Attack.performed += instance.OnAttack;
             @Attack.canceled += instance.OnAttack;
@@ -259,6 +285,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
+            @Aim.started -= instance.OnAim;
+            @Aim.performed -= instance.OnAim;
+            @Aim.canceled -= instance.OnAim;
             @Attack.started -= instance.OnAttack;
             @Attack.performed -= instance.OnAttack;
             @Attack.canceled -= instance.OnAttack;
@@ -292,6 +321,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
+        void OnAim(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
     }
 }

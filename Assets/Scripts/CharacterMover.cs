@@ -1,13 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Android.Gradle;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CharacterMover : MonoBehaviour
 {
+    [SerializeField] private InputReader _inputReader;
+    
     [SerializeField] private float _moveSpeed = 3f;
     [SerializeField] private float _rotationSpeed = 360f;
-    [SerializeField] private float _maxAcceleration = 120f;
+    [SerializeField] private float _rotationMultiplyerY = 350f;
 
     [SerializeField] private Transform _camFollowTransform;
     
@@ -17,13 +21,27 @@ public class CharacterMover : MonoBehaviour
     private CharacterAnimator _animator;
 
     private bool _isMoving;
+    private bool _isRotatingWithCamera;
+    private bool _isRotatingWithInput;
+
+    private float _rotationDegree;
+    private Vector3 _desiredRotation;
+
     private Vector2 _moveInputVector;
+    private Vector2 _lookInputVector;
+    
     private Vector3 _moveDirection;
+    private Quaternion _rotationToInput;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
         _animator = GetComponent<CharacterAnimator>();
+    }
+
+    private void OnEnable()
+    {
+        _inputReader.LookInput += OnLookInput;
     }
 
     private void Start()
@@ -40,7 +58,14 @@ public class CharacterMover : MonoBehaviour
     {
         PerformMovement();
         
+        RotateRbWithInput();
+
         _animator.PlayMovement(_moveInputVector);
+    }
+
+    private void OnDisable()
+    {
+        _inputReader.LookInput -= OnLookInput;
     }
 
     public void Move(Vector2 moveDirection)
@@ -57,6 +82,26 @@ public class CharacterMover : MonoBehaviour
         _moveInputVector = moveDirection;
     }
 
+    public void SwitchRotatingWithInput(bool isRotating)
+    {
+        _isRotatingWithInput = isRotating;
+        
+    }
+    
+    private void RotateRbWithInput()
+    {
+        if (_isRotatingWithInput == false)
+            return;
+        
+        Vector3 rotationSpeedVector = new Vector3(0f, _rotationSpeed / 2f, 0f);
+        Vector3 rotationVector = rotationSpeedVector * _lookInputVector.x;
+        Quaternion rotationDelta = Quaternion.Euler(rotationVector * Time.fixedDeltaTime);
+        
+        _rigidbody.MoveRotation(_rigidbody.rotation * rotationDelta);
+        
+        _lookInputVector = Vector2.zero;
+    }
+    
     private void CalculateRotationAndMovement()
     {
         if (_isMoving == false)
@@ -73,10 +118,6 @@ public class CharacterMover : MonoBehaviour
         if (_isMoving == false)
             return;
         
-        Vector3 direction = new Vector3(_moveInputVector.x, 0f, _moveInputVector.y).normalized;
-
-        float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _camera.transform.eulerAngles.y;
-        
         RotateRb();
         MoveRb();
     }
@@ -91,7 +132,7 @@ public class CharacterMover : MonoBehaviour
 
     private void RotateRb()
     {
-        if (_moveDirection == Vector3.zero)
+        if (_moveDirection == Vector3.zero || _isRotatingWithInput == true)
             return;
         
         Vector3 camForwardFlattened = Vector3.ProjectOnPlane(_camera.transform.forward, Vector3.up).normalized;
@@ -117,5 +158,11 @@ public class CharacterMover : MonoBehaviour
         Vector3 flattenedForward = Vector3.ProjectOnPlane(dirTransform.forward, Vector3.up).normalized;
 
         return flattenedForward;
+    }
+
+    private void OnLookInput(Vector2 lookInput)
+    {
+        if(_isRotatingWithInput)
+            _lookInputVector += lookInput;
     }
 }

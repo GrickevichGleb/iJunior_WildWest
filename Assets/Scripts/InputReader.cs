@@ -14,7 +14,9 @@ public class InputReader : MonoBehaviour
     private Vector2 _lookInputDirection;
 
     public event Action<Vector2> MoveInput;
-    public event Action<Vector2> LookInput; 
+    public event Action<Vector2> LookInput;
+
+    public event Action<bool> Aiming;
 
     private void Awake()
     {
@@ -27,6 +29,10 @@ public class InputReader : MonoBehaviour
         
         _playerInput.GameplayMain.Movement.performed += OnMovement;
         _playerInput.GameplayMain.Look.performed += OnLook;
+
+        _playerInput.GameplayMain.Aim.started += OnAim;
+        _playerInput.GameplayMain.Aim.canceled += OnAim;
+            
         _playerInput.GameplayMain.Attack.performed += OnAttack;
     }
 
@@ -36,6 +42,10 @@ public class InputReader : MonoBehaviour
         
         _playerInput.GameplayMain.Movement.performed -= OnMovement;
         _playerInput.GameplayMain.Look.performed -= OnLook;
+        
+        _playerInput.GameplayMain.Aim.started -= OnAim;
+        _playerInput.GameplayMain.Aim.canceled -= OnAim;
+        
         _playerInput.GameplayMain.Attack.performed -= OnAttack;
     }
 
@@ -51,6 +61,14 @@ public class InputReader : MonoBehaviour
         _moveInputDirection = context.ReadValue<Vector2>();
         
         MoveInput?.Invoke(_moveInputDirection);
+    }
+
+    private void OnAim(InputAction.CallbackContext context)
+    {
+        if(context.started)
+            Aiming?.Invoke(true);
+        else if(context.canceled)
+            Aiming?.Invoke(false);
     }
 
     private void OnAttack(InputAction.CallbackContext context)

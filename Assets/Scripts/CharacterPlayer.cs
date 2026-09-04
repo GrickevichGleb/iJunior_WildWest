@@ -7,18 +7,22 @@ public class CharacterPlayer : MonoBehaviour
 {
     [SerializeField] private InputReader _inputReader;
     [SerializeField] private CharacterMover _mover;
-    [SerializeField] private LookAroundCamera lookAroundCamera;
+    [SerializeField] private CharacterCamera _characterCamera;
     
     private void OnEnable()
     {
         _inputReader.MoveInput += OnMoveInput;
         _inputReader.LookInput += OnLookInput;
+
+        _inputReader.Aiming += OnAiming;
     }
 
     private void OnDisable()
     {
         _inputReader.MoveInput -= OnMoveInput;
         _inputReader.LookInput -= OnLookInput;
+        
+        _inputReader.Aiming -= OnAiming;
     }
 
     private void OnMoveInput(Vector2 moveInput)
@@ -26,8 +30,14 @@ public class CharacterPlayer : MonoBehaviour
         _mover.Move(moveInput);
     }
 
+    private void OnAiming(bool isAiming)
+    {
+        _characterCamera.SwitchAimCamera(isAiming);
+        _mover.SwitchRotatingWithInput(isAiming);
+    }
+
     private void OnLookInput(Vector2 lookInput)
     {
-        lookAroundCamera.Look(lookInput);
+        //characterCamera.Look(lookInput);
     }
 }

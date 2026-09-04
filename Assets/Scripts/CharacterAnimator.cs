@@ -23,6 +23,11 @@ public class CharacterAnimator : MonoBehaviour
         _isMoving = true;
     }
 
+    public void SetIsAiming(bool isAiming)
+    {
+        _animator.SetBool("IsAiming", isAiming);
+    }
+
     private void SetIsMoving(Vector2 moveInput)
     {
         if (moveInput == Vector2.zero)
@@ -40,5 +45,7 @@ public class CharacterAnimator : MonoBehaviour
             _isMoving = true;
         }
     }
+    
+    
 
 }
