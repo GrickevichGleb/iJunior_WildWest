@@ -23,15 +23,12 @@ public class CharacterMover : MonoBehaviour
     private bool _isMoving;
     private bool _isRotatingWithCamera;
     private bool _isRotatingWithInput;
-
-    private float _rotationDegree;
-    private Vector3 _desiredRotation;
-
+    
     private Vector2 _moveInputVector;
     private Vector2 _lookInputVector;
     
-    private Vector3 _moveDirection;
-    private Quaternion _rotationToInput;
+    private Quaternion _desiredRotation;
+    private Vector3 _desiredMoveDirection;
 
     private void Awake()
     {
@@ -51,16 +48,16 @@ public class CharacterMover : MonoBehaviour
 
     private void Update()
     {
-        CalculateRotationAndMovement();
+        UpdateRotation();
+        UpdateMoveDirection();
     }
 
     private void FixedUpdate()
     {
-        PerformMovement();
-        
-        RotateRbWithInput();
-
-        _animator.PlayMovement(_moveInputVector);
+        RotateRbDesired();
+        MoveRbDesired();
+     
+        PlayMovementAnimation();
     }
 
     private void OnDisable()
@@ -84,63 +81,74 @@ public class CharacterMover : MonoBehaviour
 
     public void SwitchRotatingWithInput(bool isRotating)
     {
-        _isRotatingWithInput = isRotating;
+        _lookInputVector = Vector2.zero;
         
+        _isRotatingWithInput = isRotating;
+        _isRotatingWithCamera = !isRotating;
+        //
+        //
+        // if(isRotating)
+        //     SetRotationWithCamera();
     }
     
-    private void RotateRbWithInput()
+    private void UpdateRotation()
     {
-        if (_isRotatingWithInput == false)
-            return;
+        if(_isRotatingWithInput)
+            SetRotationWithInput();
         
+        if(_isRotatingWithCamera)
+            SetRotationWithCamera();
+    }
+
+    private void SetRotationWithInput()
+    {
         Vector3 rotationSpeedVector = new Vector3(0f, _rotationSpeed / 2f, 0f);
         Vector3 rotationVector = rotationSpeedVector * _lookInputVector.x;
         Quaternion rotationDelta = Quaternion.Euler(rotationVector * Time.fixedDeltaTime);
-        
-        _rigidbody.MoveRotation(_rigidbody.rotation * rotationDelta);
-        
-        _lookInputVector = Vector2.zero;
-    }
-    
-    private void CalculateRotationAndMovement()
-    {
-        if (_isMoving == false)
-        {
-            _moveDirection = Vector3.zero;
-            return;
-        }
 
-        _moveDirection = GetMoveDirection(_moveInputVector);
+        _desiredRotation = _rigidbody.rotation * rotationDelta;
     }
 
-    private void PerformMovement()
+    private void SetRotationWithCamera()
     {
-        if (_isMoving == false)
-            return;
-        
-        RotateRb();
-        MoveRb();
-    }
-
-    private void MoveRb()
-    {
-        Vector3 moveDirection = GetMoveDirection(_moveInputVector);
-        
-        
-        _rigidbody.velocity = moveDirection * _moveSpeed;
-    }
-
-    private void RotateRb()
-    {
-        if (_moveDirection == Vector3.zero || _isRotatingWithInput == true)
-            return;
-        
         Vector3 camForwardFlattened = Vector3.ProjectOnPlane(_camera.transform.forward, Vector3.up).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(camForwardFlattened, Vector3.up);
 
-        Quaternion rotation =
-            Quaternion.RotateTowards(_rigidbody.rotation, lookRotation, _rotationSpeed * Time.fixedDeltaTime);
-        _rigidbody.MoveRotation(rotation);
+        _desiredRotation = lookRotation;
+    }
+
+    private void RotateRbDesired()
+    {
+        if (_isRotatingWithCamera == true && _isMoving == false)
+            return;
+        
+        if (_isRotatingWithInput)
+        {
+            Quaternion toRotation = 
+                Quaternion.RotateTowards(_rigidbody.rotation, _desiredRotation, _rotationSpeed * Time.fixedDeltaTime);
+        
+            _rigidbody.MoveRotation(toRotation);
+            
+            _lookInputVector = Vector2.zero;
+        }
+        else if (_isRotatingWithCamera)
+        {
+            Quaternion deltaRotation = _desiredRotation * Quaternion.Inverse(_rigidbody.rotation);
+            deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+
+            if (angle > 180f)
+                angle -= 360f;
+
+            _rigidbody.angularVelocity = axis * (angle * Mathf.Deg2Rad / Time.fixedDeltaTime);
+        }
+    }
+
+    private void UpdateMoveDirection()
+    {
+        Vector3 moveDirection = GetMoveDirection(_moveInputVector);
+        moveDirection.Normalize();
+
+        _desiredMoveDirection = new Vector3(moveDirection.x, 0f, moveDirection.z);
     }
 
     private Vector3 GetMoveDirection(Vector2 input)
@@ -153,16 +161,28 @@ public class CharacterMover : MonoBehaviour
         return moveDirection.normalized;
     }
 
-    private Vector3 GetLookDirection(Transform dirTransform)
+    private void MoveRbDesired()
     {
-        Vector3 flattenedForward = Vector3.ProjectOnPlane(dirTransform.forward, Vector3.up).normalized;
+        Vector3 targetVelocity = _desiredMoveDirection * _moveSpeed;
+        targetVelocity.y = _rigidbody.velocity.y;
+        Vector3 velocityChange = targetVelocity - _rigidbody.velocity;
+        
+        _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+    }
 
-        return flattenedForward;
+    private void PlayMovementAnimation()
+    {
+        Vector3 localMovement = transform.InverseTransformDirection(GetMoveDirection(_moveInputVector));
+        Vector2 animMoveVector = new Vector2(localMovement.x, localMovement.z);
+        
+        _animator.PlayMovement(animMoveVector);
     }
 
     private void OnLookInput(Vector2 lookInput)
     {
         if(_isRotatingWithInput)
             _lookInputVector += lookInput;
+
+        //_lookInputVector = lookInput;
     }
 }

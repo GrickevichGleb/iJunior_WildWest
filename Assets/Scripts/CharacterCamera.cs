@@ -43,9 +43,10 @@ public class CharacterCamera : MonoBehaviour
         {
             CamPivotVertical();
         }
-        
+
         AdjustAimTargetPosition();
     }
+
 
     private void OnDisable()
     {
@@ -79,14 +80,15 @@ public class CharacterCamera : MonoBehaviour
 
     private void AdjustAimTargetPosition()
     {
-        Vector3 look = _mainCameraTransform.TransformDirection(Vector3.forward);
-        
-        _aimTarget.transform.position = _mainCameraTransform.position + look * 7f;
+        _aimTarget.transform.position = _aimCameraPivot.position + _aimCameraPivot.forward * 3f;
     }
 
     private void EnableLookAroundCam()
     {
         _isAiming = false;
+
+        SnapFreeLookBehindPlayer();
+        
         _aimCameraPivot.localRotation = Quaternion.Euler(0f, 0f, 0f);
         
         _lookAroundInputProvider.enabled = true;
@@ -106,6 +108,21 @@ public class CharacterCamera : MonoBehaviour
         _cmAimCamera.gameObject.SetActive(true);
         
         _aimRig.weight = 1f;
+    }
+
+    private void SnapFreeLookBehindPlayer()
+    {
+        _cmLookAroundCam.m_XAxis.Value = transform.eulerAngles.y;
+
+        float pivotLocalX = _aimCameraPivot.localRotation.eulerAngles.x;
+
+        if (pivotLocalX > 180f)
+            pivotLocalX -= 360;
+
+        float yAxisValue = Mathf.InverseLerp(_minRotationAngle, _maxRotationAngle, pivotLocalX);
+        _cmLookAroundCam.m_YAxis.Value = yAxisValue;
+        
+        _cmLookAroundCam.PreviousStateIsValid = false;
     }
     
     private void OnLookInput(Vector2 lookInput)

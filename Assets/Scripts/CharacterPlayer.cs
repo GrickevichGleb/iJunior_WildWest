@@ -17,6 +17,11 @@ public class CharacterPlayer : MonoBehaviour
         _inputReader.Aiming += OnAiming;
     }
 
+    private void Start()
+    {
+        OnAiming(false);
+    }
+
     private void OnDisable()
     {
         _inputReader.MoveInput -= OnMoveInput;
@@ -32,8 +37,8 @@ public class CharacterPlayer : MonoBehaviour
 
     private void OnAiming(bool isAiming)
     {
-        _characterCamera.SwitchAimCamera(isAiming);
         _mover.SwitchRotatingWithInput(isAiming);
+        _characterCamera.SwitchAimCamera(isAiming);
     }
 
     private void OnLookInput(Vector2 lookInput)
