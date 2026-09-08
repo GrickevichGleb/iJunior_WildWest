@@ -49,7 +49,7 @@ public class CharacterMover : MonoBehaviour
     private void Update()
     {
         UpdateRotation();
-        UpdateMoveDirection();
+        UpdateMoveDesired();
     }
 
     private void FixedUpdate()
@@ -143,7 +143,7 @@ public class CharacterMover : MonoBehaviour
         }
     }
 
-    private void UpdateMoveDirection()
+    private void UpdateMoveDesired()
     {
         Vector3 moveDirection = GetMoveDirection(_moveInputVector);
         moveDirection.Normalize();
