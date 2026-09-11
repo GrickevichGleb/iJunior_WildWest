@@ -17,6 +17,7 @@ public class InputReader : MonoBehaviour
     public event Action<Vector2> LookInput;
 
     public event Action<bool> Aiming;
+    public event Action Attack;
 
     private void Awake()
     {
@@ -73,6 +74,6 @@ public class InputReader : MonoBehaviour
 
     private void OnAttack(InputAction.CallbackContext context)
     {
-        Debug.Log("Attacking");
+        Attack?.Invoke();
     }
 }
