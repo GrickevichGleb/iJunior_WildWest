@@ -36,18 +36,24 @@ public class CharEnemy : Character
     {
         base.Reset();
 
-        CharAnimator.ResetPrams();
-        Health.ResetCurrent();
-        
         _isDead = false;
         
+        Health.ResetCurrent();
+
         CharCollider.enabled = true;
         CharRigidbody.isKinematic = false;
 
         Mover.enabled = true;
         Attacker.enabled = true;
     }
-    
+
+    protected override void Release()
+    {
+        CharAnimator.ResetState();
+        
+        base.Release();
+    }
+
     private void SelectBehaviour()
     {
         if (_isDead == true)

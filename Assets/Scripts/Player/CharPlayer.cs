@@ -8,13 +8,12 @@ public class CharPlayer : Character
     [SerializeField] private InputReader _inputReader;
     [SerializeField] private CharPlayerCamera _charPlayerCamera;
     [SerializeField] private Transform _aimCamPivot;
-    [Space] 
-    //[SerializeField] private PlayerAnimator _playerAnimator;
-    
+
     private Vector3 _lookInputDirection;
     private Vector3 _moveInputDirection;
 
     private Transform _camTransform;
+    
     public bool IsAiming { get; private set; } = false;
 
     public event Action<bool> AimSwitched;
@@ -55,6 +54,21 @@ public class CharPlayer : Character
         _inputReader.Aiming -= OnAiming;
         _inputReader.Attack -= OnAttack;
     }
+    
+    public override void Reset()
+    {
+        base.Reset();
+
+        CharAnimator.ResetState();
+
+        Health.ResetCurrent();
+
+        CharCollider.enabled = true;
+        CharRigidbody.isKinematic = false;
+
+        Mover.enabled = true;
+        Attacker.enabled = true;
+    }
 
     private Vector3 GetMoveDirection()
     {
@@ -85,7 +99,6 @@ public class CharPlayer : Character
         IsAiming = isAiming;
         
         _charPlayerCamera.SwitchAimCamera(isAiming);
-        //_playerAnimator.SetIsAiming(isAiming);
         CharAnimator.SetIsAiming(isAiming);
         
         AimSwitched?.Invoke(isAiming);

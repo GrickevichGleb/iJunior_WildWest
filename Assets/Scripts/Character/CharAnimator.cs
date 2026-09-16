@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,12 +13,20 @@ public class CharAnimator : MonoBehaviour
     protected const string DeathTrig = "Death";
     
     [SerializeField] protected Animator _animator;
-
-    public void ResetPrams()
+    
+    public void ResetState()
     {
-        _animator.enabled = true;
-        
         _animator.SetBool(IsMovingPar, false);
+        _animator.SetFloat(MoveXPar, 0);
+        _animator.SetFloat(MoveZPar, 0);
+        
+        _animator.ResetTrigger(AttackTrig);
+        _animator.ResetTrigger(DeathTrig);
+        
+        _animator.SetBool(IsAimingPar, false);
+        
+        _animator.Rebind();
+        _animator.Update(0f);
     }
     
     public void OverrideAttackAnimation(Weapon weapon)
