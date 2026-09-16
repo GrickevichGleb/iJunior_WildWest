@@ -67,9 +67,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bc0743b4bd6d40cbb4bc56f7155760c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _animatorOverride: {fileID: 22100000, guid: e21a6b5d2267d472caf19f73f9e166fd, type: 2}
+  _animatorOverride: {fileID: 22100000, guid: 208931e06efce4e0b959f78738954ac5, type: 2}
   <Damage>k__BackingField: 20
   <AttackInterval>k__BackingField: 2
+  <IsRangedWeapon>k__BackingField: 0
+  <AttackRange>k__BackingField: 1.2
   _damageCollider: {fileID: 5937465151476847158}
   _delayBeforeActiveDamage: 0.12
   _activeDamageDuration: 0.3

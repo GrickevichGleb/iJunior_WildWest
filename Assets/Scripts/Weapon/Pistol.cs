@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Pistol : Weapon
 {
-    [SerializeField] private PlayerAttacker _playerAttacker;
     [SerializeField] private Transform _firingPoint;
     [SerializeField] private float _shotMaxDistance = 100f;
     [SerializeField] private ParticleSystem _shotEffect;
@@ -17,13 +16,12 @@ public class Pistol : Weapon
 
     private void Shoot()
     {
-        Debug.DrawRay(_firingPoint.position, _firingPoint.forward * 50f, Color.red, 1f);
+        //Debug.DrawRay(_firingPoint.position, _firingPoint.forward * 50f, Color.red, 1f);
 
         if (Physics.Raycast(_firingPoint.position, _firingPoint.forward, out RaycastHit hit, _shotMaxDistance))
         {
             if(hit.collider.TryGetComponent(out Health health))
             {
-                Debug.Log("Hit: " + hit.collider.name);
                 health.TakeDamage(Damage);
             }
         }

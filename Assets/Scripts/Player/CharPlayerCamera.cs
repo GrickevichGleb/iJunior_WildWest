@@ -2,32 +2,32 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
-using UnityEngine.UI;
 
-public class CharacterCamera : MonoBehaviour
+public class CharPlayerCamera : MonoBehaviour
 {
     [SerializeField] private InputReader _inputReader;
-    [SerializeField] private LayerMask _aimLayerMask;
+    [SerializeField] private Transform _aimCameraPivot;
     
     [SerializeField] private CinemachineInputProvider _lookAroundInputProvider;
     [SerializeField] private CinemachineFreeLook _cmLookAroundCam;
     [SerializeField] private CinemachineVirtualCamera _cmAimCamera;
-    
-    [SerializeField] private Transform _aimCameraPivot;
+
     [SerializeField] private float _maxRotationAngle = 42f;
-    [SerializeField] private float _minRotationAngle = -32f;
+    [SerializeField] private float _minRotationAngle = -45f;
     
     [SerializeField] private Rig _aimRig;
     [SerializeField] private Transform _aimTarget;
-    
-    [SerializeField] private CharacterAnimator _animator;
+    [SerializeField] private LayerMask _aimLayerMask;
 
     private Transform _mainCameraTransform;
+
+    private Vector3 _aimRotationDeltaVector = new Vector3();
     
     private bool _isAiming = false;
-    private Vector3 _lookMovement = new Vector3();
+    private float _lastRotationY = 0f;
     
     private void OnEnable()
     {
@@ -37,73 +37,68 @@ public class CharacterCamera : MonoBehaviour
     private void Start()
     {
         _mainCameraTransform = Camera.main.transform;
+
+        _lastRotationY = _aimCameraPivot.rotation.eulerAngles.y;
     }
 
     private void Update()
     {
-        if (_isAiming == true)
-        {
-            CamPivotVertical();
-        }
-
+        RotateAimCamera();
+        
         AdjustAimTargetPosition();
     }
-
 
     private void OnDisable()
     {
         _inputReader.LookInput -= OnLookInput;
     }
 
-    public bool TryGetAimPoint(out Vector3 aimPoint)
+    public void SwitchAimCamera(bool isAiming)
     {
-        aimPoint = Vector3.zero;
-        
-        if (_isAiming == false)
-            return false;
-
-        aimPoint = _aimTarget.position;
-        return true;
-    }
-    
-    public void SwitchAimCamera(bool isActive)
-    {
-        if (isActive == true)
+        if (isAiming == true)
             EnableAimCamera();
         else
             EnableLookAroundCam();
         
-        _animator.SetIsAiming(isActive);
+        //_animator.SetIsAiming(isAiming);
     }
 
-    private void CamPivotVertical()
+    private void RotateAimCamera()
     {
-        Vector3 eulerAngles = _aimCameraPivot.localRotation.eulerAngles;
-        float curAngle = eulerAngles.x;
+        if (_isAiming == false)
+            return;
         
-        if (curAngle > 180f)
-            curAngle -= 360;
+        Vector3 localEulerAngles = _aimCameraPivot.localRotation.eulerAngles;
+        float currentLocalX = localEulerAngles.x;
+
+        if ( currentLocalX > 180f)
+             currentLocalX -= 360;
         
-        float newAngleX = curAngle + _lookMovement.x;
+        float newAngleX = currentLocalX + _aimRotationDeltaVector.x;
         newAngleX = Mathf.Clamp(newAngleX, _minRotationAngle, _maxRotationAngle);
+        localEulerAngles.x = newAngleX;
+        _aimCameraPivot.localRotation = Quaternion.Euler(localEulerAngles);
 
-        eulerAngles.x = newAngleX;    
-        _aimCameraPivot.localRotation = Quaternion.Euler(eulerAngles);
+
+        Vector3 globalEulerAngles = _aimCameraPivot.rotation.eulerAngles;
+        float newAngleY = _lastRotationY + _aimRotationDeltaVector.y;
+        globalEulerAngles.y = newAngleY;
+        _aimCameraPivot.rotation = Quaternion.Euler(globalEulerAngles);
+
+        _lastRotationY = newAngleY;
     }
 
-    private void AdjustAimTargetPosition()
+    private void EnableAimCamera()
     {
-        if(_isAiming == true)
-        {
-            if (Physics.Raycast(_mainCameraTransform.position, _mainCameraTransform.forward, 
-                    out RaycastHit hit, 100f, _aimLayerMask))
-            {
-                _aimTarget.transform.position = hit.point;
-                return;
-            }
-        }
+        _isAiming = true;
+
+        _aimCameraPivot.localRotation = Quaternion.Euler(0f, 0f, 0f);
+
+        _lookAroundInputProvider.enabled = false;
+        _cmLookAroundCam.gameObject.SetActive(false);
+        _cmAimCamera.gameObject.SetActive(true);
         
-        _aimTarget.transform.position = _aimCameraPivot.position + _aimCameraPivot.forward * 3f;
+        _aimRig.weight = 1f;
     }
 
     private void EnableLookAroundCam()
@@ -121,19 +116,6 @@ public class CharacterCamera : MonoBehaviour
         _aimRig.weight = 0f;
     }
 
-    private void EnableAimCamera()
-    {
-        _isAiming = true;
-
-        _aimCameraPivot.localRotation = Quaternion.Euler(0f, 0f, 0f);
-
-        _lookAroundInputProvider.enabled = false;
-        _cmLookAroundCam.gameObject.SetActive(false);
-        _cmAimCamera.gameObject.SetActive(true);
-        
-        _aimRig.weight = 1f;
-    }
-
     private void SnapFreeLookBehindPlayer()
     {
         _cmLookAroundCam.m_XAxis.Value = transform.eulerAngles.y;
@@ -149,8 +131,23 @@ public class CharacterCamera : MonoBehaviour
         _cmLookAroundCam.PreviousStateIsValid = false;
     }
     
+    private void AdjustAimTargetPosition()
+    {
+        if(_isAiming == true)
+        {
+            if (Physics.Raycast(_mainCameraTransform.position, _mainCameraTransform.forward, 
+                    out RaycastHit hit, 100f, _aimLayerMask))
+            {
+                _aimTarget.transform.position = hit.point;
+                return;
+            }
+        }
+        
+        _aimTarget.transform.position = _aimCameraPivot.position + _aimCameraPivot.forward * 3f;
+    }
+    
     private void OnLookInput(Vector2 lookInput)
     {
-        _lookMovement = new Vector3(-lookInput.y, lookInput.x, 0f);
+        _aimRotationDeltaVector = new Vector3(-lookInput.y, lookInput.x, 0f);
     }
 }

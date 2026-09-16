@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class PlayerHUD : MonoBehaviour
 {
-    [SerializeField] private CharacterPlayer _player;
+    [SerializeField] private CharPlayer _player;
     [SerializeField] private Image _aimReticule;
 
     private void OnEnable()

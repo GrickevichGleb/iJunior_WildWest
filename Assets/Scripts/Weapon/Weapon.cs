@@ -8,6 +8,8 @@ public class Weapon : MonoBehaviour
     [SerializeField] protected AnimatorOverrideController _animatorOverride;
     [field: SerializeField] public int Damage { get; private set; }
     [field: SerializeField] public int AttackInterval { get; private set; }
+    [field: SerializeField] public bool IsRangedWeapon { get; private set; }
+    [field: SerializeField] public float AttackRange { get; private set; }
 
     public bool IsReadyToAttack { get; private set; }
 

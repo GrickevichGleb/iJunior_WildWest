@@ -244,9 +244,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d4e014e2be0b48538bdb41587b95d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animatorOverride: {fileID: 0}
   <Damage>k__BackingField: 50
   <AttackInterval>k__BackingField: 1
+  <IsRangedWeapon>k__BackingField: 1
+  <AttackRange>k__BackingField: 60
+  _playerAttacker: {fileID: 0}
   _firingPoint: {fileID: 120865712029495302}
+  _shotMaxDistance: 100
   _shotEffect: {fileID: 8584640832851796801}
 --- !u!1 &5643089298456921596
 GameObject:

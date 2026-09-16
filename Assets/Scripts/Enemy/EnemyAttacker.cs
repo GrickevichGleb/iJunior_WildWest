@@ -5,22 +5,23 @@ using UnityEngine;
 
 public class EnemyAttacker : Attacker
 {
-    [SerializeField] private EnemyAnimator _enemyAnimator;
-
+    private CharAnimator _charAnimator;
+    
     private float _lastAttackTime;
 
     public bool IsAttacking { get; private set; }
 
     private void Start()
     {
-        _enemyAnimator.OverrideAttackAnimation(_weapon);
+        _charAnimator = GetComponent<CharAnimator>();
+        _charAnimator.OverrideAttackAnimation(_weapon);
     }
 
     public override void Attack()
     {
         if (_weapon.TryAttack())
         {
-            _enemyAnimator.PlayAttack();
+            _charAnimator.PlayAttack();
         }
     }
 }

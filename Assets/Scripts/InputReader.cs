@@ -6,8 +6,6 @@ using UnityEngine.InputSystem;
 
 public class InputReader : MonoBehaviour
 {
-    [SerializeField] private CharacterAnimator _animator;
-    
     private PlayerInput _playerInput;
 
     private Vector2 _moveInputDirection;
