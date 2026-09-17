@@ -66,34 +66,40 @@ public class CharPlayerCamera : MonoBehaviour
     private void RotateAimCamera()
     {
         if (_isAiming == false)
-            return;
-        
-        Vector3 localEulerAngles = _aimCameraPivot.localRotation.eulerAngles;
-        float currentLocalX = localEulerAngles.x;
+        {
+            Vector3 flattenedForward = 
+                Vector3.ProjectOnPlane(_mainCameraTransform.forward, Vector3.up).normalized;
+            
+            Quaternion lookRotation = Quaternion.LookRotation(flattenedForward);
+            _aimCameraPivot.rotation = lookRotation;
+        }
+        else
+        {
+            Vector3 localEulerAngles = _aimCameraPivot.localRotation.eulerAngles;
+            float currentLocalX = localEulerAngles.x;
 
-        if ( currentLocalX > 180f)
-             currentLocalX -= 360;
-        
-        float newAngleX = currentLocalX + _aimRotationDeltaVector.x;
-        newAngleX = Mathf.Clamp(newAngleX, _minRotationAngle, _maxRotationAngle);
-        localEulerAngles.x = newAngleX;
-        _aimCameraPivot.localRotation = Quaternion.Euler(localEulerAngles);
+            if (currentLocalX > 180f)
+                currentLocalX -= 360;
+
+            float newAngleX = currentLocalX + _aimRotationDeltaVector.x;
+            newAngleX = Mathf.Clamp(newAngleX, _minRotationAngle, _maxRotationAngle);
+            localEulerAngles.x = newAngleX;
+            _aimCameraPivot.localRotation = Quaternion.Euler(localEulerAngles);
 
 
-        Vector3 globalEulerAngles = _aimCameraPivot.rotation.eulerAngles;
-        float newAngleY = _lastRotationY + _aimRotationDeltaVector.y;
-        globalEulerAngles.y = newAngleY;
-        _aimCameraPivot.rotation = Quaternion.Euler(globalEulerAngles);
+            Vector3 globalEulerAngles = _aimCameraPivot.rotation.eulerAngles;
+            float newAngleY = _lastRotationY + _aimRotationDeltaVector.y;
+            globalEulerAngles.y = newAngleY;
+            _aimCameraPivot.rotation = Quaternion.Euler(globalEulerAngles);
+        }
 
-        _lastRotationY = newAngleY;
+        _lastRotationY = _aimCameraPivot.rotation.eulerAngles.y;
     }
 
     private void EnableAimCamera()
     {
         _isAiming = true;
-
-        _aimCameraPivot.localRotation = Quaternion.Euler(0f, 0f, 0f);
-
+        
         _lookAroundInputProvider.enabled = false;
         _cmLookAroundCam.gameObject.SetActive(false);
         _cmAimCamera.gameObject.SetActive(true);
@@ -106,8 +112,6 @@ public class CharPlayerCamera : MonoBehaviour
         _isAiming = false;
 
         SnapFreeLookBehindPlayer();
-        
-        _aimCameraPivot.localRotation = Quaternion.Euler(0f, 0f, 0f);
         
         _lookAroundInputProvider.enabled = true;
         _cmLookAroundCam.gameObject.SetActive(true);
