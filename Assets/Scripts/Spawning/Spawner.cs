@@ -36,13 +36,14 @@ public class Spawner<T> : MonoBehaviour where T : Spawnable
     protected virtual void ActionOnGet(T spawnable)
     {
         spawnable.Reset();
+        spawnable.gameObject.SetActive(true);
         spawnable.RequestRelease += OnRequestRelease;
         
         ActiveObjects.Add((T)spawnable);
         Spawned?.Invoke((T)spawnable);
     }
 
-    protected void OnRequestRelease(Spawnable spawnable)
+    protected virtual void OnRequestRelease(Spawnable spawnable)
     {
         ActiveObjects.Remove((T)spawnable);
         spawnable.RequestRelease -= OnRequestRelease;

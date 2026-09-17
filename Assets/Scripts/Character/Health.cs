@@ -3,15 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Health : MonoBehaviour
+public class Health : StatValue
 {
     private bool _isDead = false;
     
-    public event Action Changed;
     public event Action Death;
-
-    [field: SerializeField] public int Max { get; private set; }
-    public int Current { get; private set; }
 
     private void Awake()
     {
@@ -28,13 +24,16 @@ public class Health : MonoBehaviour
         
         if(Current <= 0)
             Die();
-        
-        Changed?.Invoke();
+
+        InvokeChanged();
     }
 
     public void ResetCurrent()
     {
+        _isDead = false;
         Current = Max;
+        
+        InvokeChanged();
     }
 
     private void Die()

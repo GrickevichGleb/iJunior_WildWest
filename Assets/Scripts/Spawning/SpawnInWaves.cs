@@ -33,24 +33,31 @@ public class SpawnInWaves : MonoBehaviour
         _spawningCoroutine = StartCoroutine(SpawnCoroutine());
     }
 
+    public bool IsAllEnemiesSpawned()
+    {
+        if (_currentWave == _numberOfWaves && _spawnedEnemiesInThisWave == _numberOfEnemiesInWave)
+            return true;
+
+        return false;
+    }
+
     private IEnumerator SpawnCoroutine()
     {
         while (_currentWave <= _numberOfWaves)
         {
-            Debug.Log("Wave started: " + _currentWave);
+            _spawnedEnemiesInThisWave = 0;
             
             while (_spawnedEnemiesInThisWave < _numberOfEnemiesInWave)
             {
                 yield return new WaitForSeconds(_spawnInterval);
-            
+                
                 _enemySpawner.SpawnEnemy();
                 _spawnedEnemiesInThisWave++;
             }
-            Debug.Log($"Wave {_currentWave} finished");
+
             yield return new WaitForSeconds(_intervalBetweenWaves);
 
             _currentWave++;
-            _spawnedEnemiesInThisWave = 0;
         }
     }
 }

@@ -1,11 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class EndGameScreen : ScreenPanel
 {
+    [SerializeField] private TMP_Text _titleText;
+    
     public event Action RestartButtonClicked;
+
+    public void SetTitleText(string text)
+    {
+        _titleText.text = text;
+    }
     
     public override void Close()
     {

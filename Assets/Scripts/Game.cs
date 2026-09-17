@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
+    private const string VictoryTitle = "VICTORY";
+    private const string DefeatTitle = "DEFEAT";
+    
     [SerializeField] private CharPlayer _player;
     [SerializeField] private Transform _playerStartPosition;
     [Space] 
@@ -31,7 +34,9 @@ public class Game : MonoBehaviour
     private void Start()
     {
         _playerHealth = _player.GetComponent<Health>();
-        _playerHealth.Death += OnGameOver;
+        _playerHealth.Death += OnPlayerDead;
+
+        _enemySpawner.EnemyDead += OnEnemyDead;
         
         Time.timeScale = 0;
         _endScreen.Close();
@@ -51,10 +56,19 @@ public class Game : MonoBehaviour
         _spawnWaves.ResetWaves();
     }
 
-    private void OnGameOver()
+    private void OnPlayerDead()
     {
-        //Time.timeScale = 0f;
+        _endScreen.SetTitleText(DefeatTitle);
         _endScreen.Open();
+    }
+
+    private void OnEnemyDead()
+    {
+        if (_spawnWaves.IsAllEnemiesSpawned() && _enemySpawner.GetActiveEnemiesCount() == 0)
+        {
+            _endScreen.SetTitleText(VictoryTitle);
+            _endScreen.Open();
+        }
     }
 
     private void OnStartButtonClicked()
