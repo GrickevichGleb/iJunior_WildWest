@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpawnInWaves : MonoBehaviour
+public class SpawnInWaves : StatValue
 {
     [SerializeField] private int _numberOfWaves = 3;
     [SerializeField] private int _numberOfEnemiesInWave = 4;
@@ -19,6 +19,7 @@ public class SpawnInWaves : MonoBehaviour
     
     private void Start()
     {
+        UpdateStat();
         _spawningCoroutine = StartCoroutine(SpawnCoroutine());
     }
 
@@ -55,9 +56,21 @@ public class SpawnInWaves : MonoBehaviour
                 _spawnedEnemiesInThisWave++;
             }
 
+            yield return new WaitUntil(() => _enemySpawner.GetActiveEnemiesCount() == 0);
+            
             yield return new WaitForSeconds(_intervalBetweenWaves);
 
             _currentWave++;
+            
+            UpdateStat();
         }
+    }
+
+    private void UpdateStat()
+    {
+        Current = _currentWave;
+        Max = _numberOfWaves;
+        
+        InvokeChanged();
     }
 }
