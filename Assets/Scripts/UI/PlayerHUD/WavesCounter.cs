@@ -16,6 +16,11 @@ public class WavesCounter : MonoBehaviour
         OnValueChanged();
     }
 
+    private void OnDestroy()
+    {
+        _statValue.Changed -= OnValueChanged;
+    }
+
     private void OnValueChanged()
     {
         _textField.text = $"Wave: {_statValue.Current} / {_statValue.Max}";

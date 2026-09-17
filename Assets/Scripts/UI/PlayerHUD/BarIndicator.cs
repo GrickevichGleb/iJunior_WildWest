@@ -21,6 +21,11 @@ public class BarIndicator : MonoBehaviour
         OnValueChanged();
     }
 
+    private void OnDestroy()
+    {
+        _statValue.Changed -= OnValueChanged;
+    }
+
     private void OnValueChanged()
     {
         if(_displayChangesCoroutine != null)

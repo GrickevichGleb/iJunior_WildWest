@@ -12,11 +12,15 @@ public class CharEnemy : Character
     private Vector3 _lookDirection;
     
     private bool _isDead = false;
-
     
-    private void Start()
+    private void OnEnable()
     {
         Health.Death += OnDeath;
+    }
+
+    private void OnDisable()
+    {
+        Health.Death -= OnDeath;
     }
 
     private void Update()
